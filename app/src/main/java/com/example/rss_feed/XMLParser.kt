@@ -41,7 +41,14 @@ class XMLParser {
                     }
                     when (parser.name) {
                         "title" -> title = readTitle(parser)
-                        "im:name" -> readName(parser)
+                        "author"->{
+                            parser.require(XmlPullParser.START_TAG,ns,"author")
+                            while (parser.next()!=XmlPullParser.END_TAG){
+                                if (parser.eventType!=XmlPullParser.START_TAG){continue}
+                                when(parser.name){
+                                    "name" -> name = readName(parser)
+                                    else -> skip(parser)
+                                }                                }}
                         else -> skip(parser)
                     }
                 }
@@ -55,7 +62,6 @@ class XMLParser {
 fun skip(parser: XmlPullParser) {
     if(parser.eventType!=XmlPullParser.START_TAG){
         throw IllegalStateException()
-
     }
 var depth=1
     while (depth!=0){
@@ -63,16 +69,13 @@ var depth=1
             XmlPullParser.END_TAG->depth--
             XmlPullParser.START_TAG->depth++
         }
-
     }
 }
-
 private fun readName(parser: XmlPullParser):String? {
     parser.require(XmlPullParser.START_TAG, ns, "name")
     val name = readText(parser)
     parser.require(XmlPullParser.END_TAG,ns,"name")
     return name
-
 }
 
 private fun readTitle(parser: XmlPullParser): String? {
